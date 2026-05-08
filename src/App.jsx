@@ -499,44 +499,30 @@ function App() {
     return false;
   }
 
-  function getBlindSeats(playerList = players, dealerSeatOverride = null) {
-  const dealerSeat = dealerSeatOverride || room?.current_dealer_seat || 1;
+    function getBlindSeats(playerList = players, dealerSeatOverride = null) {
+    const dealerSeat = dealerSeatOverride || room?.current_dealer_seat || 1;
 
-  // In this app, getNextSeatFrom() is the clockwise direction.
-  const clockwiseFromDealer = getNextSeatFrom(dealerSeat, playerList);
+    const clockwiseFromDealer = getNextSeatFrom(dealerSeat, playerList);
 
-  // Heads-up rule requested:
-  // Dealer is also BIG BLIND.
-  // Other player is SMALL BLIND.
-  if (playerList.length === 2) {
+    // 2-player rule:
+    // Dealer is also BIG BLIND.
+    // Other player is SMALL BLIND.
+    if (playerList.length === 2) {
+      const smallBlindSeat = clockwiseFromDealer;
+      const bigBlindSeat = dealerSeat;
+
+      return {
+        dealerSeat,
+        smallBlindSeat,
+        bigBlindSeat,
+        firstPreflopSeat: smallBlindSeat,
+        firstPostflopSeat: smallBlindSeat,
+      };
+    }
+
+    // 3+ players:
+    // Dealer -> Small Blind -> Big Blind clockwise
     const smallBlindSeat = clockwiseFromDealer;
-    const bigBlindSeat = dealerSeat;
-
-    return {
-      dealerSeat,
-      smallBlindSeat,
-      bigBlindSeat,
-      firstPreflopSeat: smallBlindSeat,
-      firstPostflopSeat: smallBlindSeat,
-    };
-  }
-
-  // 3+ players:
-  // Dealer -> Small Blind -> Big Blind clockwise
-  const smallBlindSeat = clockwiseFromDealer;
-  const bigBlindSeat = getNextSeatFrom(smallBlindSeat, playerList);
-  const firstPreflopSeat = getNextSeatFrom(bigBlindSeat, playerList);
-
-  return {
-    dealerSeat,
-    smallBlindSeat,
-    bigBlindSeat,
-    firstPreflopSeat,
-    firstPostflopSeat: smallBlindSeat,
-  };
-}
-
-    const smallBlindSeat = getNextSeatFrom(dealerSeat, playerList);
     const bigBlindSeat = getNextSeatFrom(smallBlindSeat, playerList);
     const firstPreflopSeat = getNextSeatFrom(bigBlindSeat, playerList);
 

@@ -500,19 +500,41 @@ function App() {
   }
 
   function getBlindSeats(playerList = players, dealerSeatOverride = null) {
-    const dealerSeat = dealerSeatOverride || room?.current_dealer_seat || 1;
+  const dealerSeat = dealerSeatOverride || room?.current_dealer_seat || 1;
 
-    if (playerList.length === 2) {
-      const bigBlindSeat = getNextSeatFrom(dealerSeat, playerList);
+  // In this app, getNextSeatFrom() is the clockwise direction.
+  const clockwiseFromDealer = getNextSeatFrom(dealerSeat, playerList);
 
-      return {
-        dealerSeat,
-        smallBlindSeat: dealerSeat,
-        bigBlindSeat,
-        firstPreflopSeat: dealerSeat,
-        firstPostflopSeat: dealerSeat,
-      };
-    }
+  // Heads-up rule requested:
+  // Dealer is also BIG BLIND.
+  // Other player is SMALL BLIND.
+  if (playerList.length === 2) {
+    const smallBlindSeat = clockwiseFromDealer;
+    const bigBlindSeat = dealerSeat;
+
+    return {
+      dealerSeat,
+      smallBlindSeat,
+      bigBlindSeat,
+      firstPreflopSeat: smallBlindSeat,
+      firstPostflopSeat: smallBlindSeat,
+    };
+  }
+
+  // 3+ players:
+  // Dealer -> Small Blind -> Big Blind clockwise
+  const smallBlindSeat = clockwiseFromDealer;
+  const bigBlindSeat = getNextSeatFrom(smallBlindSeat, playerList);
+  const firstPreflopSeat = getNextSeatFrom(bigBlindSeat, playerList);
+
+  return {
+    dealerSeat,
+    smallBlindSeat,
+    bigBlindSeat,
+    firstPreflopSeat,
+    firstPostflopSeat: smallBlindSeat,
+  };
+}
 
     const smallBlindSeat = getNextSeatFrom(dealerSeat, playerList);
     const bigBlindSeat = getNextSeatFrom(smallBlindSeat, playerList);

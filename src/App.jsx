@@ -9,7 +9,7 @@ const rankValues = {
   "9": 9, "10": 10, J: 11, Q: 12, K: 13, A: 14,
 };
 
-const TURN_SECONDS = 30;
+const TURN_SECONDS = 120;
 
 // 1 unit = £0.005
 // Green £0.025, Blue £0.05, Black £0.10, Purple £0.50, Gold £1.00

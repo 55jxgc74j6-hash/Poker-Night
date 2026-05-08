@@ -1635,8 +1635,8 @@ function App() {
     return (
       <div className="page">
         <div className="card">
-          <h1>Poker Night</h1>
-          <p>Free private poker rooms. No real money.</p>
+          <h1>Lads Poker Night</h1>
+          <p>Prepare for Fin to win all your money</p>
 
           <input placeholder="Your username" value={username} onChange={(e) => setUsername(e.target.value)} />
 

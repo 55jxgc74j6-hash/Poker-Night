@@ -1101,3 +1101,87 @@ header,
     margin: 12px auto;
   }
 }
+.cardFlip,
+.miniCardFlip {
+  perspective: 900px;
+  display: inline-block;
+}
+
+.cardFlip {
+  width: 48px;
+  height: 68px;
+}
+
+.miniCardFlip {
+  width: 27px;
+  height: 38px;
+}
+
+.cardFlipInner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transform: rotateY(0deg) scale(0.96);
+  transition:
+    transform 0.7s cubic-bezier(0.18, 0.9, 0.22, 1.2),
+    filter 0.7s ease;
+  transition-delay: var(--flip-delay, 0ms);
+  filter: brightness(0.85);
+}
+
+.cardFlip.isFlipped .cardFlipInner,
+.miniCardFlip.isFlipped .cardFlipInner {
+  transform: rotateY(180deg) scale(1);
+  filter: brightness(1.05);
+}
+
+.cardFace {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  backface-visibility: hidden;
+  font-weight: 950;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+.cardBackDesign {
+  color: #ffd95a;
+  background:
+    radial-gradient(circle at center, rgba(255, 217, 90, 0.3), transparent 35%),
+    linear-gradient(135deg, #151515, #510d0d);
+  border: 2px solid rgba(255, 217, 90, 0.45);
+}
+
+.cardFront {
+  transform: rotateY(180deg);
+  background: linear-gradient(180deg, #fff, #ececec);
+  color: #101010;
+  font-size: 22px;
+}
+
+.miniFront {
+  font-size: 11px;
+  border-radius: 6px;
+}
+
+.cardFlip.isFlipped {
+  animation: cardPop 0.78s ease both;
+  animation-delay: var(--flip-delay, 0ms);
+}
+
+@keyframes cardPop {
+  0% {
+    transform: translateY(-8px) scale(0.92);
+  }
+
+  55% {
+    transform: translateY(-2px) scale(1.07);
+  }
+
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}

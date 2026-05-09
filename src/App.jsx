@@ -173,13 +173,24 @@ const [whisperTo, setWhisperTo] = useState([]);
     return card?.suit === "♥" || card?.suit === "♦";
   }
 
-  function CardView({ card, small = false }) {
-    return (
-      <div className={`${small ? "miniCard" : "cardBack"} ${isRedCard(card) ? "redCard" : ""}`}>
-        {card ? `${card.rank}${card.suit}` : "?"}
+function CardView({ card, small = false, delay = 0 }) {
+  const isFaceUp = !!card;
+
+  return (
+    <div
+      className={`${small ? "miniCardFlip" : "cardFlip"} ${isFaceUp ? "isFlipped" : ""}`}
+      style={{ "--flip-delay": `${delay}ms` }}
+    >
+      <div className="cardFlipInner">
+        <div className="cardFace cardBackDesign">★</div>
+
+        <div className={`cardFace cardFront ${small ? "miniFront" : ""} ${isRedCard(card) ? "redCard" : ""}`}>
+          {card ? `${card.rank}${card.suit}` : ""}
+        </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   function saveSession(roomData, playerData) {
     localStorage.setItem(
@@ -1885,9 +1896,16 @@ function getBlindSeats(playerList = players, dealerSeatOverride = null) {
       <div className="pokerTable compactPokerTable">
         <div className="communityCards">
           {[0, 1, 2, 3, 4].map((index) => {
-            const card = game?.community_cards?.[index];
-            return <CardView key={index} card={card} />;
-          })}
+  const card = game?.community_cards?.[index];
+
+  return (
+    <CardView
+      key={`${game?.phase}-${index}-${card?.rank || "hidden"}-${card?.suit || "hidden"}`}
+      card={card}
+      delay={index * 220}
+    />
+  );
+})}
         </div>
 
         {room?.status === "playing" && (
@@ -1929,8 +1947,13 @@ function getBlindSeats(playerList = players, dealerSeatOverride = null) {
               {canRevealShowdown && hand?.cards && (
                 <div className="revealedCards compactReveal">
                   {hand.cards.map((card, cardIndex) => (
-                    <CardView key={cardIndex} card={card} small />
-                  ))}
+  <CardView
+    key={`${card.rank}-${card.suit}`}
+    card={card}
+    small
+    delay={cardIndex * 150}
+  />
+))}
                 </div>
               )}
             </div>
@@ -1995,8 +2018,12 @@ function getBlindSeats(playerList = players, dealerSeatOverride = null) {
             <div className="bottomLabel">Your Hand</div>
             <div className="handCards">
               {myHand.map((card, index) => (
-                <CardView key={index} card={card} />
-              ))}
+  <CardView
+    key={`${card.rank}-${card.suit}`}
+    card={card}
+    delay={index * 180}
+  />
+))}
             </div>
           </div>
 

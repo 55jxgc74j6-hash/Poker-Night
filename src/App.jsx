@@ -30,7 +30,9 @@ function App() {
   const [buyInValue, setBuyInValue] = useState("6.40");
   const [smallBlind, setSmallBlind] = useState("0.05");
   const [bigBlind, setBigBlind] = useState("0.10");
-
+const [chatMessages, setChatMessages] = useState([]);
+const [chatInput, setChatInput] = useState("");
+const [whisperTo, setWhisperTo] = useState([]);
   const [room, setRoom] = useState(null);
   const [currentPlayer, setCurrentPlayer] = useState(null);
   const [players, setPlayers] = useState([]);
@@ -224,7 +226,65 @@ function App() {
 
     if (!error) setChipRequests(data || []);
   }
+async function loadChatMessages(roomId) {
+  if (!currentPlayer?.id) return;
 
+  const { data, error } = await supabase
+    .from("chat_messages")
+    .select("*")
+    .eq("room_id", roomId)
+    .order("created_at", { ascending: true })
+    .limit(80);
+
+  if (error) {
+    setError(error.message);
+    return;
+  }
+
+  const visibleMessages = (data || []).filter((msg) => {
+    if (!msg.visible_to) return true;
+    return msg.visible_to.includes(currentPlayer.id);
+  });
+
+  setChatMessages(visibleMessages);
+}
+
+function toggleWhisperPlayer(playerId) {
+  setWhisperTo((current) =>
+    current.includes(playerId)
+      ? current.filter((id) => id !== playerId)
+      : [...current, playerId]
+  );
+}
+
+async function sendChatMessage() {
+  setError("");
+
+  if (!chatInput.trim()) return;
+  if (!room?.id || !currentPlayer?.id) return;
+
+  const visibleTo =
+    whisperTo.length > 0
+      ? [...new Set([...whisperTo, currentPlayer.id])]
+      : null;
+
+  const { error } = await supabase.from("chat_messages").insert({
+    room_id: room.id,
+    sender_id: currentPlayer.id,
+    sender_name: currentPlayer.username,
+    message: chatInput.trim(),
+    visible_to: visibleTo,
+  });
+
+  if (error) {
+    setError(error.message);
+    return;
+  }
+
+  setChatInput("");
+  setWhisperTo([]);
+  await loadChatMessages(room.id);
+}
   async function requestMoreChips() {
     setError("");
 
@@ -499,53 +559,52 @@ function App() {
     return false;
   }
 
-    function getBlindSeats(playerList = players, dealerSeatOverride = null) {
-    const dealerSeat = dealerSeatOverride || room?.current_dealer_seat || 1;
+function getBlindSeats(playerList = players, dealerSeatOverride = null) {
+  const dealerSeat = dealerSeatOverride || room?.current_dealer_seat || 1;
 
-    const clockwiseFromDealer = getNextSeatFrom(dealerSeat, playerList);
+  // This function gives the next seat clockwise in your current app layout.
+  const nextClockwiseSeat = getNextSeatFrom(dealerSeat, playerList);
 
-    // 2-player rule:
-    // Dealer is also BIG BLIND.
-    // Other player is SMALL BLIND.
-    if (playerList.length === 2) {
-      const smallBlindSeat = clockwiseFromDealer;
-      const bigBlindSeat = dealerSeat;
-
-      return {
-        dealerSeat,
-        smallBlindSeat,
-        bigBlindSeat,
-        firstPreflopSeat: smallBlindSeat,
-        firstPostflopSeat: smallBlindSeat,
-      };
-    }
-
-    // 3+ players:
-    // Dealer -> Small Blind -> Big Blind clockwise
-    const smallBlindSeat = clockwiseFromDealer;
-    const bigBlindSeat = getNextSeatFrom(smallBlindSeat, playerList);
-    const firstPreflopSeat = getNextSeatFrom(bigBlindSeat, playerList);
-
+  // HEADS-UP:
+  // Dealer = Big Blind
+  // Other player = Small Blind
+  if (playerList.length === 2) {
     return {
       dealerSeat,
-      smallBlindSeat,
-      bigBlindSeat,
-      firstPreflopSeat,
-      firstPostflopSeat: smallBlindSeat,
+      smallBlindSeat: nextClockwiseSeat,
+      bigBlindSeat: dealerSeat,
+      firstPreflopSeat: nextClockwiseSeat,
+      firstPostflopSeat: nextClockwiseSeat,
     };
   }
 
+  // 3+ PLAYERS:
+  // Dealer -> Small Blind -> Big Blind clockwise
+  const smallBlindSeat = nextClockwiseSeat;
+  const bigBlindSeat = getNextSeatFrom(smallBlindSeat, playerList);
+  const firstPreflopSeat = getNextSeatFrom(bigBlindSeat, playerList);
+
+  return {
+    dealerSeat,
+    smallBlindSeat,
+    bigBlindSeat,
+    firstPreflopSeat,
+    firstPostflopSeat: smallBlindSeat,
+  };
+}
+
   function getRoleLabel(player) {
-    const blindSeats = players.length >= 2 ? getBlindSeats(players) : null;
-    if (!blindSeats) return "";
+  const blindSeats = players.length >= 2 ? getBlindSeats(players) : null;
+  if (!blindSeats) return "";
 
-    const labels = [];
-    if (player.seat_number === blindSeats.dealerSeat) labels.push("D");
-    if (player.seat_number === blindSeats.smallBlindSeat) labels.push("SB");
-    if (player.seat_number === blindSeats.bigBlindSeat) labels.push("BB");
+  const labels = [];
 
-    return labels.join("/");
-  }
+  if (player.seat_number === blindSeats.dealerSeat) labels.push("D");
+  if (player.seat_number === blindSeats.smallBlindSeat) labels.push("SB");
+  if (player.seat_number === blindSeats.bigBlindSeat) labels.push("BB");
+
+  return labels.join("/");
+}
 
   function combinations(array, size) {
     const result = [];
@@ -963,6 +1022,7 @@ function App() {
 
     await addLog("New hand dealt");
     await loadPlayers(room.id);
+    loadChatMessages(room.id);
     await loadRoom(room.id);
     await loadGame(room.id);
   }
@@ -1726,7 +1786,61 @@ function App() {
 
         <button className="smallTopButton" onClick={leaveRoom}>Leave</button>
       </div>
+<div className="chatDock sleekPanel">
+  <div className="chatMessages">
+    {chatMessages.length === 0 ? (
+      <p className="emptyChat">No messages yet.</p>
+    ) : (
+      chatMessages.map((msg) => {
+        const isWhisper = msg.visible_to && msg.visible_to.length > 0;
 
+        return (
+          <div key={msg.id} className={isWhisper ? "chatMessage whisperMessage" : "chatMessage"}>
+            <strong>
+              {msg.sender_name}
+              {isWhisper ? " whispered" : ""}
+            </strong>
+            <span>{msg.message}</span>
+          </div>
+        );
+      })
+    )}
+  </div>
+
+  <div className="whisperRow">
+    <span>Whisper:</span>
+
+    {players
+      .filter((player) => player.id !== currentPlayer?.id)
+      .map((player) => (
+        <button
+          key={player.id}
+          type="button"
+          className={whisperTo.includes(player.id) ? "whisperChip selected" : "whisperChip"}
+          onClick={() => toggleWhisperPlayer(player.id)}
+        >
+          {player.username}
+        </button>
+      ))}
+  </div>
+
+  <div className="chatInputRow">
+    <input
+      value={chatInput}
+      placeholder={
+        whisperTo.length > 0
+          ? "Whisper message..."
+          : "Talk shit..."
+      }
+      onChange={(e) => setChatInput(e.target.value)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") sendChatMessage();
+      }}
+    />
+
+    <button onClick={sendChatMessage}>Send</button>
+  </div>
+</div>
       {!isShowdown && room?.status === "playing" && (
         <div className="topCenterStatus sleekPanel">
           <p><strong>{currentTurnPlayer?.username || "..."}</strong>'s turn</p>

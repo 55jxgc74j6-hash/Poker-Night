@@ -174,17 +174,26 @@ const [whisperTo, setWhisperTo] = useState([]);
   }
 
 function CardView({ card, small = false, delay = 0 }) {
-  const isFaceUp = !!card;
+  const [showFront, setShowFront] = useState(false);
+
+  useEffect(() => {
+    setShowFront(false);
+
+    if (!card) return;
+
+    const timer = setTimeout(() => {
+      setShowFront(true);
+    }, delay);
+
+    return () => clearTimeout(timer);
+  }, [card?.rank, card?.suit, delay]);
 
   return (
-    <div
-      className={`${small ? "miniCardFlip" : "cardFlip"} ${isFaceUp ? "isFlipped" : ""}`}
-      style={{ "--flip-delay": `${delay}ms` }}
-    >
-      <div className="cardFlipInner">
-        <div className="cardFace cardBackDesign">★</div>
+    <div className={small ? "flipCard miniFlipCard" : "flipCard"}>
+      <div className={`flipInner ${showFront ? "showFront" : ""}`}>
+        <div className="flipFace flipBack">★</div>
 
-        <div className={`cardFace cardFront ${small ? "miniFront" : ""} ${isRedCard(card) ? "redCard" : ""}`}>
+        <div className={`flipFace flipFront ${isRedCard(card) ? "redCard" : ""}`}>
           {card ? `${card.rank}${card.suit}` : ""}
         </div>
       </div>

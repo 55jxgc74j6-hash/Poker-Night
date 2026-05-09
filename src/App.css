@@ -1101,42 +1101,32 @@ header,
     margin: 12px auto;
   }
 }
-.cardFlip,
-.miniCardFlip {
+.flipCard {
+  width: 48px;
+  height: 68px;
   perspective: 900px;
   display: inline-block;
 }
 
-.cardFlip {
-  width: 48px;
-  height: 68px;
-}
-
-.miniCardFlip {
+.miniFlipCard {
   width: 27px;
   height: 38px;
 }
 
-.cardFlipInner {
+.flipInner {
   position: relative;
   width: 100%;
   height: 100%;
   transform-style: preserve-3d;
-  transform: rotateY(0deg) scale(0.96);
-  transition:
-    transform 0.7s cubic-bezier(0.18, 0.9, 0.22, 1.2),
-    filter 0.7s ease;
-  transition-delay: var(--flip-delay, 0ms);
-  filter: brightness(0.85);
+  transform: rotateY(0deg);
+  transition: transform 0.75s cubic-bezier(0.2, 0.8, 0.2, 1.15);
 }
 
-.cardFlip.isFlipped .cardFlipInner,
-.miniCardFlip.isFlipped .cardFlipInner {
-  transform: rotateY(180deg) scale(1);
-  filter: brightness(1.05);
+.flipInner.showFront {
+  transform: rotateY(180deg);
 }
 
-.cardFace {
+.flipFace {
   position: absolute;
   inset: 0;
   display: grid;
@@ -1144,44 +1134,35 @@ header,
   border-radius: 9px;
   backface-visibility: hidden;
   font-weight: 950;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.32);
 }
 
-.cardBackDesign {
+.flipBack {
   color: #ffd95a;
   background:
-    radial-gradient(circle at center, rgba(255, 217, 90, 0.3), transparent 35%),
-    linear-gradient(135deg, #151515, #510d0d);
+    radial-gradient(circle at center, rgba(255, 217, 90, 0.32), transparent 36%),
+    linear-gradient(135deg, #1b0b0b, #5f1010);
   border: 2px solid rgba(255, 217, 90, 0.45);
+  font-size: 20px;
 }
 
-.cardFront {
+.flipFront {
   transform: rotateY(180deg);
   background: linear-gradient(180deg, #fff, #ececec);
   color: #101010;
   font-size: 22px;
 }
 
-.miniFront {
-  font-size: 11px;
+.miniFlipCard .flipFace {
   border-radius: 6px;
+  font-size: 11px;
 }
 
-.cardFlip.isFlipped {
-  animation: cardPop 0.78s ease both;
-  animation-delay: var(--flip-delay, 0ms);
+.miniFlipCard .flipBack {
+  font-size: 10px;
+  border-width: 1px;
 }
 
-@keyframes cardPop {
-  0% {
-    transform: translateY(-8px) scale(0.92);
-  }
-
-  55% {
-    transform: translateY(-2px) scale(1.07);
-  }
-
-  100% {
-    transform: translateY(0) scale(1);
-  }
+.redCard {
+  color: #d62828 !important;
 }

@@ -1008,28 +1008,29 @@ header,
 }
 .chatDock {
   position: fixed;
-  left: 50%;
-  bottom: 148px;
-  transform: translateX(-50%);
-  width: min(620px, calc(100vw - 420px));
-  max-height: 175px;
-  padding: 10px 12px;
+  left: 18px;
+  top: 112px;
+  bottom: auto;
+  transform: none;
+  width: 300px;
+  max-height: 150px;
+  padding: 8px 10px;
   z-index: 24;
 }
 
 .chatMessages {
-  max-height: 82px;
+  max-height: 48px;
   overflow-y: auto;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   padding-right: 4px;
 }
 
 .chatMessage {
   display: flex;
-  gap: 6px;
-  font-size: 12px;
-  line-height: 1.25;
-  margin-bottom: 5px;
+  gap: 5px;
+  font-size: 11px;
+  line-height: 1.2;
+  margin-bottom: 4px;
 }
 
 .chatMessage strong {
@@ -1047,22 +1048,22 @@ header,
 
 .emptyChat {
   margin: 0;
-  font-size: 12px;
+  font-size: 11px;
   opacity: 0.55;
 }
 
 .whisperRow {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   overflow-x: auto;
-  margin-bottom: 8px;
-  font-size: 11px;
+  margin-bottom: 6px;
+  font-size: 10px;
   opacity: 0.9;
 }
 
 .whisperChip {
-  padding: 5px 8px;
+  padding: 4px 7px;
   font-size: 10px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.12);
@@ -1078,18 +1079,18 @@ header,
 .chatInputRow {
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: 8px;
+  gap: 6px;
 }
 
 .chatInputRow input {
   margin: 0;
-  padding: 9px 10px;
-  font-size: 13px;
+  padding: 7px 9px;
+  font-size: 12px;
 }
 
 .chatInputRow button {
-  padding: 8px 12px;
-  font-size: 12px;
+  padding: 7px 10px;
+  font-size: 11px;
 }
 
 @media (max-width: 950px) {
